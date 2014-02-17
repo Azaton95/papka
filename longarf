@@ -1,0 +1,118 @@
+//Структура, описывающая некторое число поциферно // Struct LN
+//void create //перегружена// ( int // unit // const char *) - создает это длинное число как объект
+//printf() - печатает число на экран
+//void add(const LN &a) - добавить вида +=
+//void sub( ) - вычисть
+#define _CRT_SECURE_NO_WARNINGS
+#define uint unsigned int
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+class LN
+{
+	unsigned char *k;
+	size_t len;
+	bool sign;
+public:
+	LN(int a);
+	LN(uint a);
+	LN(const char *a);
+	//~LN();
+	void add(const LN &a);
+	void sub(const LN &a);
+	void print();
+};
+
+LN::LN(const char *a)
+{
+	sign = false;
+	len = strlen(a)-1;
+	if (a[0]=='-')
+	{
+		sign=true;
+		k=new unsigned char[len-1];
+		for(int i=0,j=0;i<=len-1;i++,j++)
+		{
+			k[j]=a[len-i];
+		}
+		len--;
+	}
+	else
+	{
+		k=new unsigned char[len];
+		for(int i = 0;i<=len;i++)
+		{
+			k[i]=a[len-i];
+		}
+	}
+}
+
+LN::LN(int a)
+{	
+     int i, si, c;
+	 sign=false;
+ 
+     if ((si = a) < 0)  
+         c = -a;
+	 else
+		 c=a;
+     i = 0;
+     do 
+	 {       
+         i++;   
+     } while ((c /= 10) > 0); 
+	 len = i-1;
+	 k=new unsigned char[len-1];
+	 if ((si = a) < 0)  
+         c = -a;
+	 else
+		 c=a;
+	 i=0;
+	 do
+	 {
+		 k[i++]=c % 10 + '0';
+	 } while ((c /= 10) > 0);
+     if (si < 0)
+         sign=true;
+}
+
+LN::LN(uint a)
+{
+	int i;
+	uint c=a;
+	sign=false;
+	 i = 0;
+     do 
+	 {       
+         i++;   
+     } while ((c /= 10) > 0); 
+	 len = i-1;
+	 k=new unsigned char[len-1];
+	 c=a;
+	 i=0;
+	 do
+	 {
+		 k[i++]=c % 10 + '0';
+	 } while ((c /= 10) > 0);
+}
+
+
+void LN::print()
+{
+	if (sign)
+		printf("%c",'-');
+	for(int i=len; i>=0; i--)
+	printf("%c",k[i]);
+}
+
+
+int main()
+{ 
+	uint j=0-1;
+	LN x(j);
+	x.print();
+	return 0;
+}
