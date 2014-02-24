@@ -1,0 +1,241 @@
+//Структура, описывающая некторое число поциферно // Struct LN
+//void create //перегружена// ( int // unit // const char *) - создает это длинное число как объект
+//printf() - печатает число на экран
+//void add(const LN &a) - добавить вида +=
+//void sub( ) - вычисть
+#define _CRT_SECURE_NO_WARNINGS
+#define uint unsigned int
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+class LN
+{
+	unsigned char *k;
+	size_t len;
+	bool sign;
+public:
+	LN(int a);
+	LN(uint a);
+	LN(const char *a);
+	//~LN(); 	
+	void sub(const LN &a);
+	LN & operator=(const LN &a);
+	void print();
+	void add(const LN &a);
+	LN & operator+=(const LN &a);
+};
+
+LN&LN::operator=(const LN &a)
+{
+
+	len=a.len;
+	k=(unsigned char*)realloc(k, a.len*sizeof(unsigned char));
+	memcpy(k,a.k,a.len+1);
+	return *this;
+}
+
+LN&LN::operator+=(const LN &a)
+{
+	add(a);
+	return *this;
+}
+
+LN operator+(const LN&x, const LN&y)
+{
+	LN a=x;
+	a+=y;
+	return a;
+}
+
+
+LN::LN(const char *a)
+{
+	sign = false;
+	len = strlen(a)-1;
+	if (a[0]=='-')
+	{
+		sign=true;
+		k=new unsigned char[len-1];
+		for(int i=0,j=0;i<=len-1;i++,j++)
+		{
+			k[j]=a[len-i];
+		}
+		len--;
+	}
+	else
+	{
+
+		k=new unsigned char[len];
+		for(int i = 0;i<=len;i++)
+		{
+			k[i]=a[len-i];
+		}
+	}
+}
+
+LN::LN(int a)
+{	
+     int i, si, c;
+	 sign=false;
+ 
+     if ((si = a) < 0)  
+         c = -a;
+	 else
+		 c=a;
+     i = 0;
+     do 
+	 {       
+         i++;   
+     } while ((c /= 10) > 0); 
+	 len = i-1;
+	 k=new unsigned char[len-1];
+	 if ((si = a) < 0)  
+         c = -a;
+	 else
+		 c=a;
+	 i=0;
+	 do
+	 {
+		 k[i++]=c % 10 + '0';
+	 } while ((c /= 10) > 0);
+     if (si < 0)
+         sign=true;
+}
+
+LN::LN(uint a)
+{
+	int i;
+	uint c=a;
+	sign=false;
+	 i = 0;
+     do 
+	 {       
+         i++;   
+     } while ((c /= 10) > 0); 
+	 len = i-1;
+	 k=new unsigned char[len-1];
+	 c=a;
+	 i=0;
+	 do
+	 {
+		 k[i++]=c % 10 + '0';
+	 } while ((c /= 10) > 0);
+}
+
+//LN::~LN()
+//{
+//	free(k);
+//}
+
+void LN::add(const LN &a)
+{
+	bool base = false;
+	int first = 0, second = 0, result = 0;
+	if (sign == a.sign)
+	{
+		if (len >= a.len)
+		{
+			for (unsigned int i = 0; i <= len; i++)
+			{
+				result = 0;
+				first = k[i] - '0';
+
+
+				if (i > a.len)
+					second = 0;
+				else
+					second = a.k[i] - '0';
+				result = first + second + base;
+				base = false;
+				if ((result >= 10) && (i == len))
+				{
+					len++;
+					result -= 10;
+					base = true;
+					k = (unsigned char*)realloc(k, len*sizeof(unsigned char));
+					k[i] = result + '0';
+					k[i+1] = 1 + '0';
+					break;
+				}
+				if (result >= 10)
+				{
+					result -= 10;
+					base = true;
+				}
+				k[i] = result + '0';
+			}
+		}
+		else
+		{
+			k = (unsigned char*)realloc(k, a.len*sizeof(unsigned char));
+			len = a.len;
+			for (unsigned int i = 0; i < a.len; i++)
+			{
+				if (i > len)
+					first = 0;
+				else
+				first = k[i] - '0';
+				second = a.k[i] - '0';
+				result = first + second + base;
+				base = false;
+				
+				if (result>=10)
+				{
+					result -= 10;
+					base = true;
+				}
+				k[i] = result + '0';
+			}
+		}
+	}
+	else
+	{
+		if (len > a.len)
+		{
+			if (sign < a.sign)
+			{
+				int templeng = len;
+				for (int i = 0; i < templeng; i++)
+				{
+					first = k[i] - '0';
+					if (i >= a.len)
+						second = 0;
+					else
+						second = a.k[i] - '0';
+					result = first - second - base;
+					base = false;
+					if (result < 0)
+					{
+						result +=10;
+						base = true;
+					}
+					k[i] = result + '0';
+				}
+				for (int i = templeng-1; k[i] != 0; i--);
+
+
+			}
+		}
+	}
+}
+
+
+void LN::print()
+{
+	if (sign)
+		printf("%c",'-');
+	for(int i=len; i>=0; i--)
+	printf("%c",k[i]);
+}
+
+
+int main()
+{ 
+	LN x("90"),y("9"),z("80");
+	x+y;
+	x.print();
+	return 0;
+}
