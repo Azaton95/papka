@@ -1,0 +1,187 @@
+//Структура, описывающая некторое число поциферно // Struct LN
+//void create //перегружена// ( int // unit // const char *) - создает это длинное число как объект
+//printf() - печатает число на экран
+//void add(const LN &a) - добавить вида +=
+//void sub( ) - вычисть
+#define _CRT_SECURE_NO_WARNINGS
+#define uint unsigned int
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+class LN
+{
+	unsigned char *k;
+	size_t len;
+	bool sign;
+public:
+	LN(int a);
+	LN(uint a);
+	LN(const char *a);
+	//~LN();
+	void sub(const LN &a);
+	LN & operator=(const LN &a);
+	void print();
+	void add(const LN &a);
+	LN & operator+=(const LN &a);
+};
+
+LN&LN::operator=(const LN &a)
+{
+
+	len = a.len;
+	k = (unsigned char*)realloc(k, a.len*sizeof(unsigned char));
+	memcpy(k, a.k, a.len + 1);
+	return *this;
+}
+
+LN&LN::operator+=(const LN &a)
+{
+	add(a);
+	return *this;
+}
+
+LN operator+(const LN&x, const LN&y)
+{
+	LN a = x;
+	a += y;
+	return a;
+}
+
+
+LN::LN(const char *a)
+{
+	sign = false;
+	len = strlen(a) ;
+	if (a[0] == '-')
+	{
+		sign = true;
+		k = new unsigned char[len ];
+		for (int i = 0, j = 0; i <= len ; i++, j++)
+		{
+			k[j] = a[len - i];
+		}
+		len--;
+	}
+	else
+	{
+
+		k = new unsigned char[len];
+		for (int i = 0; i <= len; i++)
+		{
+			k[i] = a[len - i];
+		}
+	}
+}
+
+LN::LN(int a)
+{
+	int i, si, c;
+	sign = false;
+
+	if ((si = a) < 0)
+		c = -a;
+	else
+		c = a;
+	i = 0;
+	do
+	{
+		++i;
+	} while ((c /= 10) > 0);
+	len =i;
+	k = new unsigned char[len];
+	if ((si = a) < 0)
+		c = -a;
+	else
+		c = a;
+	i =0;
+	do
+	{
+		k[++i] = c % 10 + '0';
+	} while ((c /= 10) > 0);
+	if (si < 0)
+		sign = true;
+}
+
+LN::LN(uint a)
+{
+	int i;
+	uint c = a;
+	sign = false;
+	i = 0;
+	do
+	{
+		i++;
+	} while ((c /= 10) > 0);
+	len = i;
+	k = new unsigned char[len];
+	c = a;
+	i = 0;
+	do
+	{
+		k[++i] = c % 10 + '0';
+	} while ((c /= 10) > 0);
+	k[i] = 'NULL';
+}
+
+//LN::~LN()
+//{
+// free(k);
+//}
+
+//unsigned char summa(unsigned char *a, unsigned char *b, size_t da, size_t db)
+//{
+//
+//}
+//
+//unsigned char razno(unsigned char *a, unsigned char *b, size_t da, size_t db)
+//{
+//
+//}
+
+void LN::add(const LN &a)
+{
+	uint something = 0;
+	size_t i;
+	for (i = 0; i < len || i < a.len; i++)
+	{
+		k[i] = something +k[i]+ a.k[i]-2*'0';
+		something = (k[i]) /10;
+		k[i] %= 10;
+		k[i] += '0';
+	}
+	while (something>0 || len > i || a.len > i)
+	{
+		if (this->len > i)
+		{
+			something += abs(k[i]);
+		}
+		if (a.len > i)
+		{
+			something += abs(k[i]);
+		}
+		something /= 10;
+	}
+	return;
+}
+
+
+
+void LN::print()
+{
+	if (sign)
+		printf("%c", '-');
+	for (int i = len; i >0; i--)
+		printf("%c", k[i]);
+}
+
+
+int main()
+{
+	LN x(9), y("9");
+	x + y;
+	x.print();
+	return 0;
+}
