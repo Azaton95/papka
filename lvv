@@ -1,0 +1,287 @@
+//Структура, описывающая некторое число поциферно // Struct LN
+//void create //перегружена// ( int // unit // const char *) - создает это длинное число как объект
+//printf() - печатает число на экран
+//void add(const LN &a) - добавить вида +=
+//void sub( ) - вычисть
+#define _CRT_SECURE_NO_WARNINGS
+#define uint unsigned int
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+class LN
+{
+public:
+	unsigned char *k;
+	size_t len;
+	bool sign;
+	LN(int a);
+	LN(uint a);
+	LN(const char *a);
+	//~LN();
+	void sub(const LN &a);
+	LN & operator=(const LN &a);
+	void print();
+	void add(const LN &a);
+	void Mul(const LN &a);
+	LN & operator+=(const LN &a);
+};
+
+LN&LN::operator=(const LN &a)
+{
+
+	len = a.len;
+	k = (unsigned char*)realloc(k, a.len*sizeof(unsigned char));
+	memcpy(k, a.k, a.len + 1);
+	return *this;
+}
+
+LN&LN::operator+=(const LN &a)
+{
+	add(a);
+	return *this;
+}
+
+LN operator+(const LN&x, const LN&y)
+{
+	LN a = x;
+	a += y;
+	return a;
+}
+
+
+LN::LN(const char *a)
+{
+	sign = false;
+	len = strlen(a) ;
+	if (a[0] == '-')
+	{
+		sign = true;
+		k = new unsigned char[len-1];
+		for (int i = 0, j = 0; i <= len ; i++, j++)
+		{
+			k[j] = a[len - i-1];
+		}
+		len--;
+	}
+	else
+	{
+
+		k = new unsigned char[len];
+		for (int i = 0; i <= len; i++)
+		{
+			k[i] = a[len - i-1];
+		}
+	}
+}
+
+LN::LN(int a)
+{
+	int i, si, c;
+	sign = false;
+
+	if ((si = a) < 0)
+		c = -a;
+	else
+		c = a;
+	i = 0;
+	do
+	{
+		++i;
+	} while ((c /= 10) > 0);
+	len =i;
+	k = new unsigned char[len];
+	if ((si = a) < 0)
+		c = -a;
+	else
+		c = a;
+	i =0;
+	do
+	{
+		k[i++] = c % 10 + '0';
+	} while ((c /= 10) > 0);
+	if (si < 0)
+		sign = true;
+}
+
+LN::LN(uint a)
+{
+	int i;
+	uint c = a;
+	sign = false;
+	i = 0;
+	do
+	{
+		i++;
+	} while ((c /= 10) > 0);
+	len = i;
+	k = new unsigned char[len];
+	c = a;
+	i = 0;
+	do
+	{
+		k[i++] = c % 10 + '0';
+	} while ((c /= 10) > 0);
+}
+
+//LN::~LN()
+//{
+// free(k);
+//}
+
+void summ(const LN &A,const LN &B, LN &C)
+{
+	size_t i;
+	uint temp;
+	const unsigned char *a = A.k, *b = B.k;
+	unsigned char *c = C.k;
+	bool carry = 0;
+	if (A.len < B.len)
+	{
+		summ(B, A, C);
+		return;
+	}
+	for (i = 0; i < B.len; i++)
+	{
+		temp = a[i] - '0' + b[i] - '0' + carry;
+		if (temp / 10 >=1)
+		{ 
+			c[i] = temp%10 + '0';
+			carry = 1;
+		}
+		else
+		{
+			c[i] = temp + '0';
+			carry = 0;
+		}
+	}
+	for (; i < A.len; i++) {
+		temp = a[i]-'0' + carry;
+		if (temp >= 10) {
+			c[i] = temp%10 + '0';
+			carry = 1;
+		}
+		else {
+			c[i] = temp%10 +'0';
+			carry = 0;
+		}
+	}
+	
+	if (carry) 
+	{
+		c[i] = carry+'0';
+		C.len = A.len + 1;
+	}
+	else
+		C.len = A.len;
+}
+
+// C = A-B, должно быть A.Size >= B.Size. Работает вызов Sub(A, B, A).
+// Если длины равны, но A<B: возвращается -1, результат будет дополнением.
+int raz(const LN& A, const LN& B, LN& C) {
+	const unsigned char *a = A.k, *b = B.k;
+	unsigned char *c = C.k;
+	uint i;
+	int temp, carry = 0;
+	if (A.len < B.len)
+	{
+		C.sign =!C.sign;
+		return(1);
+	}
+	for (i = 0; i<B.len; i++) {
+		temp = (a[i]-'0') - (b[i]-'0') + carry;
+		if (temp < 0) {
+			c[i] = temp + 10 + '0';
+			carry = -1;
+		}
+		else {
+			c[i] = temp+'0';
+			carry = 0;
+		}
+	}
+	for (; i<A.len; i++) {
+		temp = a[i]-'0' + carry;
+		if (temp < 0) {
+			c[i] = temp + 10 +'0';
+			carry = -1;
+		}
+		else {
+			c[i] = temp+'0';
+			carry = 0;
+		}
+	}
+	// Размер результата может быть гораздо меньше, чем у исходного числа
+	// Устанавливаем его по первому положительному разряду
+	i = A.len - 1;
+	while ((i>0) && (c[i] == 0)) i--;
+	C.len = i + 1;
+	return carry;
+}
+
+void LN::add(const LN &a)
+{
+	if (sign == a.sign)
+		summ(*this, a, *this);
+	else
+	if ((raz(*this, a, *this)) == 1)
+		raz(a, *this, *this);
+}
+
+void LN::sub(const LN &a)
+{
+	if (sign != a.sign)
+		summ(*this, a, *this);
+	else
+		if ((raz(*this, a, *this))==1)
+			raz(a,*this,*this);		
+}
+
+
+void LN::Mul(const LN &a )
+{
+	uint i, j;
+	unsigned char *c = new unsigned char[a.len];
+	uint temp, carry;
+	// Обнулить необходимую для работы часть C
+	for (i = 0; i <= len + a.len; i++) c[i] = 0;
+	for (i = 0; i < len; i++) {
+		carry = 0;
+		// вычисление временного результата с одновременным прибавлением
+		// его к c[i+j] (делаются переносы)
+		for (j = 0; j < a.len; j++) {
+			temp = k[i] * (a.k[j]-'0') + c[i + j] + carry;
+			carry = temp / 10;
+			c[i + j] = temp - carry*10 + '0';
+		}
+		c[i + j] = carry +'0';
+	}
+	// Установить размер по первой ненулевой цифре
+	i = len + a.len - 1;
+	if (c[i] == 0) i--;
+	uint dl = i + 1;
+	len = dl;
+	k = (unsigned char*)realloc(k, dl*sizeof(unsigned char));
+	memcpy(k, c, dl);
+}
+
+
+
+
+void LN::print()
+{
+	if (sign)
+		printf("%c", '-');
+	for (int i = len-1; i >= 0; i--)
+		printf("%c", k[i]);
+}
+
+
+int main()
+{
+	LN x("15"), y("16");
+	x.sub(y);
+	x.print();
+	return 0;
+}
